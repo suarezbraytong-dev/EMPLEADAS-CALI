@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Empleadas Domésticas Cali | 340 barrios</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-[#f8f8f7] text-black">
+<div class="max-w-[1400px] mx-auto">
+<div class="bg-white border-b sticky top-0 z-30 p-4 flex justify-between items-center gap-3">
+<div class="flex items-center gap-3"><div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center"><i class="fa-solid fa-house"></i></div><div><h1 class="font-black text-[14px]">EMPLEADAS CALI</h1><p class="text-[10px] opacity-60">340 barrios • 22 comunas</p></div></div>
+<div class="flex gap-2"><span id="totalPub" class="bg-black text-white px-3 py-1.5 rounded-full text-[11px] font-bold">0 disponibles</span></div>
+</div>
+<div class="p-4"><div class="bg-black text-white rounded-[28px] p-6">
+<div class="bg-white rounded-[20px] p-3 flex flex-wrap gap-2">
+<input id="buscador" placeholder="🔍 Buscar: Pance, bebé, moto..." class="flex-1 min-w-[220px] border-2 rounded-full px-4 py-2.5 text-xs text-black outline-none">
+<select id="fComuna" class="border-2 rounded-full px-3 py-2.5 text-xs font-bold text-black"></select>
+<select id="fBarrio" class="border-2 rounded-full px-3 py-2.5 text-xs text-black"><option value="">🏘️ Todos los barrios</option></select>
+<select id="fHab" class="border-2 rounded-full px-3 py-2.5 text-xs text-black"><option value="">🔥 Habilidad</option><option>Bebés 0-2 años</option><option>Niños 3-10 años</option><option>Adulto Mayor</option><option>Mascotas</option><option>Cocina Valluna</option><option>Plancha Perfecta</option><option>Conduce Moto</option><option>Aseo Profundo</option><option>Interna</option></select>
+<select id="fEstado" class="border-2 rounded-full px-3 py-2.5 text-xs text-black"><option value="Disponible">✅ Disponibles</option><option value="">Todas</option><option value="Urgente Hoy">🔴 Urgente</option></select>
+<button id="btnLimpiar" class="border px-4 py-2.5 rounded-full text-xs text-black">Limpiar</button>
+</div></div></div>
+<div class="p-4"><div id="loading" class="grid sm:grid-cols-3 gap-4"><div class="bg-white rounded-[24px] h-48 animate-pulse"></div><div class="bg-white rounded-[24px] h-48 animate-pulse"></div><div class="bg-white rounded-[24px] h-48 animate-pulse"></div></div><div id="listaPub" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 hidden"></div><div id="vacio" class="hidden text-center bg-white rounded-[24px] p-10">No hay resultados</div></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = { apiKey: "AIzaSyBTAApo5GBupOPheePyOo3Qbs-9j4BA7i4", authDomain: "empleadas-caseras.firebaseapp.com", projectId: "empleadas-caseras", storageBucket: "empleadas-caseras.firebasestorage.app", messagingSenderId: "125301957543", appId: "1:125301957543:web:b20385407f6e3e1b090c82" };
+const db=getFirestore(initializeApp(firebaseConfig));
+const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+const comunasData = {"1":"C1 - Terrón, Aguacatal","2":"C2 - Granada, Chipichape, Flora","3":"C3 - San Antonio, Peñón","4":"C4 - Popular, Salomia, Calima, Flora","5":"C5 - Chiminangos, Barranquilla, Sena","6":"C6 - Petecuy, Floralia, Alcázares","7":"C7 - Alfonso López, Pto Mallarino","8":"C8 - Base Aérea, Industrial, Américas","9":"C9 - Alameda, Bretaña, Junín, Sucre","10":"C10 - Guabal, Panamericano, Libertad","11":"C11 - Villa del Sur, Prados Oriente","12":"C12 - Nueva Floresta, Villanueva","13":"C13 - Poblado, Marroquín, Charco Azul, Calipso","14":"C14 - Manuela Beltrán, Orquídeas","15":"C15 - Mojica, Ciudad Córdoba, Retiro","16":"C16 - Mariano Ramos, Unión, Ciudad 2000","17":"C17 - Pance, Bochalema, Jardín, Ingenio, Lili","18":"C18 - Meléndez, Chorros, Nápoles, Caldas","19":"C19 - Lido, Tequendama, Miraflores","20":"C20 - Siloé, Belén, Tierra Blanca","21":"C21 - Desepaz, Pízamos, Compartir","22":"C22 - Pance Campestre, Campestre","correg":"Corregimientos"};
+const barriosData={
+"1":["Terrón Colorado","Vista Hermosa","Aguacatal","Palmas del Norte","Villa del Mar","Bajo Aguacatal","El Naranjal","Aguacatal Alto","Palmas I"],
+"2":["Granada","Versalles","Chipichape","La Flora","Santa Mónica","El Bosque","Prados del Norte","Centenario","Juanambú","Villa del Prado","Normandía","Vipasa","La Campiña","Altos de Menga","La Merced","Santa Teresita","Arboledas"],
+"3":["San Antonio","El Peñón","San Cayetano","El Nacional","El Hoyo","La Merced","San Juan Bosco","San Pascual","El Calvario"],
+"4":["Popular","Salomía","La Isla","Ignacio Rengifo","Olaya Herrera","Calima","Flora Industrial","Las Delicias","Porvenir","Bolivariano","Marco Fidel Suárez","La Alianza"],
+"5":["Chiminangos 1 y 2","Los Parques Barranquilla","Villa del Sol","Torres de Comfandi","El Sena","Barranquilla","Los Guaduales","Villa La Paz","Paseo de los Almendros"],
+"6":["Petecuy I, II, III","La Rivera I y II","Los Alcázares","Jorge Eliécer Gaitán","Palmeras del Norte","San Luis II","Floría","Los Líderes","Ciudadela Floralia","Calimio Norte","Petecuy II"],
+"7":["Alfonso López I, II, III","Puerto Nuevo","Puerto Mallarino","Aguablanca","El Vivero","Uribe Uribe","San Marino","Las Ceibas","Parque de la Caña","Siete de Agosto"],
+"8":["Base Aérea","El Troncal","Atanasio Girardot","Chapinero","Industrial","El Trébol","La Base","Municipal","Simón Bolívar","Rafael Uribe","Las Américas","El Paraíso","Villa Colombia","Santa Mónica Popular","Saavedra Galindo","La Floresta"],
+"9":["Alameda","Bretaña","Junín","Guayaquil","Aranjuez","Berlín","San Esteban","Santa Mónica Belalcázar","Sucre","Belalcázar","Obrero","El Guabito"],
+"10":["El Guabal","Panamericano","La Libertad","San Cristóbal","Santo Domingo","El Dorado","Colseguros","La Selva","Departamental","El Prado","Santa Elena","Las Granjas","San Judas","El Porvenir","La Cumbre","La Esperanza"],
+"11":["Villa del Sur","San Pedro","José Holguín Garcés","Prados de Oriente","Gran Colombia","León XIII","La Independencia","El Jardín","La Fortaleza","Ciudad Modelo","El Prado","20 de Julio","Los Sauces"],
+"12":["Nueva Floresta","El Paraíso","Fenalco Kennedy","Julio Rincón","Eduardo Santos","Sindical","Villanueva","12 de Octubre","El Rodeo","Bello Horizonte","Asturias","El Lido"],
+"13":["Poblado I y II","Ulpiano Lloreda","Charco Azul","Calipso","Lleras Restrepo","Marroquín I, II, III","Los Comuneros I y II","El Vergel","El Diamante","Rodrigo Lara","Yira Castro","Omar Torrijos","El Poblado","Los Lagos"],
+"14":["Manuela Beltrán","Manzanares","Alfonso Bonilla Aragón","Las Orquídeas","Puertas del Sol","Talanga","Los Naranjos","Alirio Mora","José Manuel Marroquín","Marroquín III"],
+"15":["Mojica","Ciudad Córdoba","El Morichal","El Retiro","El Vallado","Llano Verde","Laureano Gómez","Ciudad Córdoba Reservado","Mojica","El Vallado"],
+"16":["Mariano Ramos","Unión de Vivienda Popular","Antonio Nariño","República de Israel","Brisas del Limonar","Ciudad 2000","La Alborada","Horizonte","La Unión","La Alborada","Ciudad 2000"],
+"17":["Pance","Bochalema","Ciudad Jardín","El Ingenio","Caney","Valle del Lili","Capri","Limonar","Mayapan","Quintas del Lili","Santa Anita","El Gran Limonar","Bosques del Limonar","Ciudad Capri","Cañaverales","La Hacienda","Los Portales","Ciudadela Comfandi","Ciudadela Pasoancho","U. Cañasgordas","Bochalema Sur","Valle del Lili","La Hacienda"],
+"18":["Meléndez","Los Chorros","Buenos Aires","Caldas","Prados del Sur","Alférez Real","Nápoles","El Jordán","Lourdes","Polvorines","Horizontes","Farallones","Mario Fernández","Caldas","Meléndez"],
+"19":["El Lido","Tequendama","Miraflores","Pampa Linda","Cañaveral","3 de Julio","El Cedro","Champagnat","Urbanización Tequendama","Camino Real","Eucarístico","El Refugio","Nueva Tequendama","Bellos Aires","Cuarto de Legua","San Fernando","Los Cámbulos"],
+"20":["Siloé","Belén","Belisario Caicedo","Lleras Camargo","Tierra Blanca","Brisas de Mayo","Cortijo","La Sultana","Camino Real","Venezuela","El Cortijo","La Estrella","Lleras Camargo","Siloé"],
+"21":["Desepaz","Talanga","Compartir","Pízamos I, II, III","Ciudadela del Río","Manuela Beltrán","Villa Mercedes","Calimio Desepaz","Ciudad Talanga","Valle Grande","Pízamos","Remansos de Comfandi"],
+"22":["Pance Campestre","Ciudad Campestre","Parcelaciones Pance","Urbanización Río Lili","Bochalema Mall","Hacienda El Castillo","Condominio Campestre","Ciudad Jardín Sur","Bochalema"],
+"correg":["La Buitrera","Pance Pueblo","El Hormiguero","Montebello","Felidia","La Elvira","El Saladito","La Paz","La Castilla","Golondrinas","La Leonera","Pichindé","Los Andes","Villacarmelo","La Vorágine","El Carmen","Pance La Viga"]
+};
+const fComuna=document.getElementById('fComuna'); fComuna.innerHTML='<option value="">📍 Todas las comunas (22)</option>'+Object.entries(comunasData).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');
+function cargarBarrios(){ const c=fComuna.value; const fBarrio=document.getElementById('fBarrio'); fBarrio.innerHTML='<option value="">🏘️ Todos los barrios</option>'; (barriosData[c]||[]).forEach(b=>{ let o=document.createElement('option'); o.value=b; o.textContent=b; fBarrio.appendChild(o); }); }
+let cache=[]; const buscador=document.getElementById('buscador');
+let t; buscador.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(render,250); });
+[fComuna, document.getElementById('fBarrio'), document.getElementById('fHab'), document.getElementById('fEstado')].forEach(el=>el.addEventListener('change',()=>{ if(el===fComuna) cargarBarrios(); render(); }));
+document.getElementById('btnLimpiar').onclick=()=>{ buscador.value=''; fComuna.value=''; document.getElementById('fBarrio').innerHTML='<option value="">🏘️ Todos los barrios</option>'; document.getElementById('fHab').value=''; document.getElementById('fEstado').value='Disponible'; render(); };
+const loading=document.getElementById('loading'), listaPub=document.getElementById('listaPub'), vacio=document.getElementById('vacio');
+onSnapshot(query(collection(db,"empleadas_v4"),orderBy("creado","desc")), snap=>{ cache=[]; snap.forEach(d=>cache.push({id:d.id,...d.data()})); loading.classList.add('hidden'); listaPub.classList.remove('hidden'); render(); });
+function render(){ let q=buscador.value.toLowerCase(); let fc=fComuna.value; let fb=document.getElementById('fBarrio').value; let fh=document.getElementById('fHab').value; let fe=document.getElementById('fEstado').value; let lista=cache.filter(e=> (e.nombre+' '+e.barrio+' '+(e.skills||[]).join(' ')).toLowerCase().includes(q) && (fc? String(e.comuna)===fc:true) && (fb? e.barrio===fb:true) && (fh? (e.skills||[]).includes(fh):true) && (fe? e.estado===fe:true)).slice(0,60); document.getElementById('totalPub').innerText=lista.length+' disponibles'; vacio.classList.toggle('hidden', lista.length>0); listaPub.innerHTML=lista.map(e=>{ const tel=String(e.telefono||'').replace(/\D/g,''); const foto=esc(e.foto||'https://via.placeholder.com/90'); return `<div class="bg-white rounded-[24px] p-5 border"><div class="flex gap-4"><img src="${foto}" class="w-[84px] h-[84px] rounded-full object-cover"><div class="flex-1"><b class="text-[14px]">${esc(e.nombre)}</b><div class="text-[11px] opacity-60">C${esc(e.comuna)} ${esc(e.barrio)}</div><div class="text-[12px] font-black">$${Number(e.pago||90000).toLocaleString('es-CO')} / día</div></div></div><div class="flex gap-2 mt-4"><a href="https://wa.me/57${tel}" target="_blank" class="flex-1 bg-green-600 text-white py-3 rounded-full text-center text-xs font-black">WhatsApp</a></div></div>`; }).join(''); }
+</script>
+</body>
+</html>
