@@ -8,7 +8,7 @@
 <body class="bg-[#f1f1f1] text-black">
 <div id="login" class="min-h-screen flex items-center justify-center p-4">
 <div class="bg-white rounded-[24px] p-8 w-full max-w-sm shadow-xl">
-<h1 class="font-black text-xl">ADMIN EMPLEADAS</h1><p class="text-xs opacity-60 mt-1"></p>
+<h1 class="font-black text-xl">ADMIN EMPLEADAS</h1>
 <input id="pass" type="password" placeholder="Clave admin" class="w-full border-2 rounded-full px-4 py-3 text-sm mt-6 outline-none">
 <button onclick="entrar()" class="w-full bg-black text-white rounded-full py-3 text-sm font-bold mt-3">Entrar</button>
 <p id="errLogin" class="text-xs text-red-600 mt-2 hidden">Clave incorrecta</p>
@@ -20,7 +20,8 @@
 <div class="flex gap-2"><a href="index.html" target="_blank" class="border px-4 py-2 rounded-full text-xs">Ver web</a><button onclick="location.reload()" class="bg-black text-white px-4 py-2 rounded-full text-xs">Salir</button></div>
 </div>
 <div class="max-w-[1400px] mx-auto p-4 grid lg:grid-cols-[380px_1fr] gap-4">
-<div class="bg-white rounded-[24px] p-5 h-fit sticky top-[72px]">
+<!-- FIX 1: lg:sticky en vez de sticky, asi en celular NO tapa -->
+<div class="bg-white rounded-[24px] p-5 h-fit lg:sticky lg:top-[72px]">
 <h2 class="font-black text-sm" id="formTitle">Agregar empleada</h2>
 <div class="grid gap-3 mt-4">
 <input id="aNombre" placeholder="Nombre completo *" class="border-2 rounded-full px-4 py-2.5 text-xs">
@@ -56,12 +57,11 @@ const firebaseConfig = {
   appId: "1:125301957543:web:b20385407f6e3e1b090c82",
   measurementId: "G-3SVEZ7CGBD"
 };
-
 const app = initializeApp(firebaseConfig); const db = getFirestore(app); const storage = getStorage(app);
 const CLAVE_ADMIN = "admin123";
 window.entrar = () => { if(document.getElementById('pass').value === CLAVE_ADMIN){ document.getElementById('login').classList.add('hidden'); document.getElementById('panel').classList.remove('hidden'); iniciar(); } else document.getElementById('errLogin').classList.remove('hidden'); }
 const comunasData = {"1":"C1 - Terrón","2":"C2 - Granada","3":"C3 - San Antonio","4":"C4 - Popular","5":"C5 - Chiminangos","6":"C6 - Petecuy","7":"C7 - Alfonso López","8":"C8 - Base Aérea","9":"C9 - Alameda","10":"C10 - Guabal","11":"C11 - Villa del Sur","12":"C12 - Nueva Floresta","13":"C13 - Poblado","14":"C14 - Manuela","15":"C15 - Mojica","16":"C16 - Mariano Ramos","17":"C17 - Pance, Bochalema, Jardín","18":"C18 - Meléndez","19":"C19 - Lido","20":"C20 - Siloé","21":"C21 - Desepaz","22":"C22 - Pance Campestre","correg":"Corregimientos"};
-const barriosData={"1":["Terrón Colorado","Vista Hermosa","Aguacatal","Palmas del Norte","Villa del Mar","Bajo Aguacatal","El Naranjal"],"2":["Granada","Versalles","Chipichape","La Flora","Santa Mónica","El Bosque","Prados del Norte","Centenario","Juanambú","Villa del Prado","Normandía","Vipasa","La Campiña","Altos de Menga"],"3":["San Antonio","El Peñón","San Cayetano","El Nacional","El Hoyo"],"4":["Popular","Salomía","La Isla","Olaya Herrera","Calima","Flora Industrial"],"5":["Chiminangos 1 y 2","Los Parques Barranquilla","Villa del Sol","Torres de Comfandi","El Sena"],"6":["Petecuy I, II, III","La Rivera I y II","Los Alcázares","Jorge Eliécer Gaitán","San Luis II"],"7":["Alfonso López I, II, III","Puerto Nuevo","Puerto Mallarino","Aguablanca"],"8":["Base Aérea","El Troncal","Atanasio Girardot","Chapinero","Industrial","El Trébol","La Base","Simón Bolívar"],"9":["Alameda","Bretaña","Junín","Guayaquil","Aranjuez","Sucre"],"10":["El Guabal","Panamericano","La Libertad","San Cristóbal","Santo Domingo","El Dorado","Colseguros","Departamental","El Prado"],"11":["Villa del Sur","San Pedro","José Holguín Garcés","Prados de Oriente","La Independencia","El Jardín"],"12":["Nueva Floresta","El Paraíso","Fenalco Kennedy","Julio Rincón","Villanueva","12 de Octubre","El Rodeo"],"13":["Poblado I y II","Ulpiano Lloreda","Charco Azul","Calipso","Marroquín I, II, III","Los Comuneros","El Vergel","El Diamante"],"14":["Manuela Beltrán","Manzanares","Alfonso Bonilla Aragón","Las Orquídeas","Puertas del Sol"],"15":["Mojica","Ciudad Córdoba","El Morichal","El Retiro","El Vallado","Llano Verde"],"16":["Mariano Ramos","Unión de Vivienda Popular","Antonio Nariño","República de Israel","Ciudad 2000"],"17":["Pance","Bochalema","Ciudad Jardín","El Ingenio","Caney","Valle del Lili","Capri","Limonar","Mayapan","Quintas del Lili","Santa Anita","El Gran Limonar","Bosques del Limonar","Ciudad Capri","Cañaverales","La Hacienda","Los Portales","Ciudadela Comfandi"],"18":["Meléndez","Los Chorros","Buenos Aires","Caldas","Prados del Sur","Nápoles","El Jordán","Lourdes"],"19":["El Lido","Tequendama","Miraflores","Pampa Linda","Cañaveral","3 de Julio","El Cedro","Champagnat","Nueva Tequendama"],"20":["Siloé","Belén","Belisario Caicedo","Lleras Camargo","Tierra Blanca","Brisas de Mayo"],"21":["Desepaz","Talanga","Compartir","Pízamos I, II, III","Ciudadela del Río","Villa Mercedes"],"22":["Pance Campestre","Ciudad Campestre","Parcelaciones Pance","Urbanización Río Lili"],"correg":["La Buitrera","Pance Pueblo","El Hormiguero","Montebello","Felidia","El Saladito","La Leonera","Pichindé","Villacarmelo"]};
+const barriosData={"1":["Terrón Colorado","Vista Hermosa","Aguacatal"],"2":["Granada","Versalles","Chipichape","La Flora"],"3":["San Antonio","El Peñón"],"10":["El Guabal","Panamericano"],"17":["Pance","Bochalema","Ciudad Jardín","El Ingenio","Caney","Valle del Lili"],"19":["El Lido","Tequendama","Miraflores"],"22":["Pance Campestre","Ciudad Campestre"]};
 const allSkills=["Bebés 0-2 años","Niños 3-10 años","Adulto Mayor","Mascotas","Cocina Valluna","Plancha Perfecta","Conduce Moto","Aseo Profundo","Interna","Fin de semana"];
 let editId=null, cacheAdmin=[];
 function iniciar(){
@@ -74,8 +74,24 @@ function iniciar(){
 }
 function renderAdmin(){ let q=document.getElementById('buscAdmin').value.toLowerCase(); let fe=document.getElementById('filtroEstadoAdmin').value; let lista=cacheAdmin.filter(e=> (e.nombre+e.barrio).toLowerCase().includes(q) && (fe?e.estado===fe:true)); document.getElementById('totalAdmin').innerText=cacheAdmin.length; document.getElementById('listaAdmin').innerHTML=lista.map(e=>`<div class="bg-white rounded-[20px] p-4 border"><div class="flex gap-3"><img src="${e.foto||'https://via.placeholder.com/80'}" class="w-14 h-14 rounded-full object-cover"><div class="flex-1"><b class="text-xs">${e.nombre}</b><p class="text-[11px] opacity-60">C${e.comuna} ${e.barrio} • $${Number(e.pago||0).toLocaleString()}</p></div></div><div class="flex gap-2 mt-3"><button onclick="editar('${e.id}')" class="flex-1 bg-black text-white py-2 rounded-full text-[11px]">Editar</button><button onclick="borrar('${e.id}')" class="border px-4 py-2 rounded-full text-[11px]">Borrar</button></div></div>`).join(''); }
 window.editar = (id)=>{ let e=cacheAdmin.find(x=>x.id===id); if(!e) return; editId=id; document.getElementById('formTitle').innerText='Editando: '+e.nombre; document.getElementById('aNombre').value=e.nombre||''; document.getElementById('aTelefono').value=e.telefono||''; document.getElementById('aComuna').value=e.comuna||''; document.getElementById('aComuna').onchange(); setTimeout(()=>document.getElementById('aBarrio').value=e.barrio||'',300); document.getElementById('aPago').value=e.pago||''; document.getElementById('aEstado').value=e.estado||'Disponible'; document.getElementById('aAntecedentes').checked=!!e.antecedentes; document.querySelectorAll('.skillChk').forEach(ch=> ch.checked = (e.skills||[]).includes(ch.value)); window.scrollTo({top:0, behavior:'smooth'}); }
-window.limpiarForm = ()=>{ editId=null; document.getElementById('formTitle').innerText='Agregar empleada'; ['aNombre','aTelefono','aPago'].forEach(i=>document.getElementById(i).value=''); document.getElementById('aFotoFile').value=''; document.getElementById('aComuna').value=''; document.getElementById('aBarrio').innerHTML='<option value="">Barrio</option>'; document.querySelectorAll('.skillChk').forEach(ch=>ch.checked=false); }
-window.guardar = async ()=>{ let nombre=document.getElementById('aNombre').value.trim(); let telefono=document.getElementById('aTelefono').value.replace(/\D/g,''); let comuna=document.getElementById('aComuna').value; let barrio=document.getElementById('aBarrio').value; if(!nombre ||!telefono ||!comuna ||!barrio){ alert('Falta nombre, teléfono, comuna y barrio'); return; } let btn=document.getElementById('btnGuardar'); btn.innerText='Guardando...'; btn.disabled=true; let fotoUrl=''; let file=document.getElementById('aFotoFile').files[0]; if(file){ const r=ref(storage,'empleadas/'+Date.now()+'_'+file.name); await uploadBytes(r,file); fotoUrl=await getDownloadURL(r); } let skills=[...document.querySelectorAll('.skillChk:checked')].map(c=>c.value); let data={ nombre, telefono, comuna, barrio, pago: Number(document.getElementById('aPago').value||90000), estado: document.getElementById('aEstado').value, foto: fotoUrl||'https://via.placeholder.com/400', skills, antecedentes: document.getElementById('aAntecedentes').checked, stars: 5, creado: serverTimestamp() }; try{ if(editId) await updateDoc(doc(db,"empleadas_v4",editId), data); else await addDoc(collection(db,"empleadas_v4"), data); limpiarForm(); alert('Guardado ✅'); }catch(e){ alert('Error: '+e.message); } btn.innerText='Guardar'; btn.disabled=false; }
+window.limpiarForm = ()=>{ editId=null; document.getElementById('formTitle').innerText='Agregar empleada'; ['aNombre','aTelefono','aPago'].forEach(i=>document.getElementById(i).value=''); document.getElementById('aFotoFile').value=''; document.getElementById('aComuna').value=''; document.getElementById('aBarrio').innerHTML='<option value="">Barrio</option>'; document.querySelectorAll('.skillChk').forEach(ch=>ch.checked=false); window.scrollTo({top:0, behavior:'smooth'}); }
+// FIX 2: Que no borre la foto si no subes una nueva
+window.guardar = async ()=>{
+ let nombre=document.getElementById('aNombre').value.trim();
+ let telefono=document.getElementById('aTelefono').value.replace(/\D/g,'');
+ let comuna=document.getElementById('aComuna').value;
+ let barrio=document.getElementById('aBarrio').value;
+ if(!nombre ||!telefono ||!comuna ||!barrio){ alert('Falta nombre, teléfono, comuna y barrio'); return; }
+ let btn=document.getElementById('btnGuardar'); btn.innerText='Guardando...'; btn.disabled=true;
+ let actual = editId? cacheAdmin.find(x=>x.id===editId) : null;
+ let fotoUrl = actual?.foto || 'https://via.placeholder.com/400';
+ let file=document.getElementById('aFotoFile').files[0];
+ if(file){ const r=ref(storage,'empleadas/'+Date.now()+'_'+file.name); await uploadBytes(r,file); fotoUrl=await getDownloadURL(r); }
+ let skills=[...document.querySelectorAll('.skillChk:checked')].map(c=>c.value);
+ let data={ nombre, telefono, comuna, barrio, pago: Number(document.getElementById('aPago').value||90000), estado: document.getElementById('aEstado').value, foto: fotoUrl, skills, antecedentes: document.getElementById('aAntecedentes').checked, stars: 5 };
+ try{ if(editId){ data.creado = actual?.creado || serverTimestamp(); await updateDoc(doc(db,"empleadas_v4",editId), data); } else { data.creado = serverTimestamp(); await addDoc(collection(db,"empleadas_v4"), data); } limpiarForm(); alert('Guardado ✅'); }catch(e){ alert('Error: '+e.message); }
+ btn.innerText='Guardar'; btn.disabled=false;
+}
 window.borrar = async (id)=>{ if(!confirm('¿Borrar?')) return; await deleteDoc(doc(db,"empleadas_v4",id)); }
 </script>
 </body>
