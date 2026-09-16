@@ -23,6 +23,15 @@
 </div></div></div>
 <div class="p-4"><div id="loading" class="grid sm:grid-cols-3 gap-4"><div class="bg-white rounded-[24px] h-48 animate-pulse"></div><div class="bg-white rounded-[24px] h-48 animate-pulse"></div><div class="bg-white rounded-[24px] h-48 animate-pulse"></div></div><div id="listaPub" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 hidden"></div><div id="vacio" class="hidden text-center bg-white rounded-[24px] p-10">No hay resultados</div></div>
 </div>
+
+<!-- MODAL PERFIL -->
+<div id="modalPerfil" class="fixed inset-0 bg-black/60 z-[100] hidden p-4 flex items-center justify-center">
+  <div class="bg-white rounded-[24px] max-w-[480px] w-full max-h-[90vh] overflow-y-auto relative">
+    <button onclick="cerrarPerfil()" class="absolute top-4 right-4 w-8 h-8 bg-black text-white rounded-full"><i class="fa-solid fa-xmark"></i></button>
+    <div id="modalContent" class="p-6"></div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -62,8 +71,26 @@ let t; buscador.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(ren
 [fComuna, document.getElementById('fBarrio'), document.getElementById('fHab'), document.getElementById('fEstado')].forEach(el=>el.addEventListener('change',()=>{ if(el===fComuna) cargarBarrios(); render(); }));
 document.getElementById('btnLimpiar').onclick=()=>{ buscador.value=''; fComuna.value=''; document.getElementById('fBarrio').innerHTML='<option value="">🏘️ Todos los barrios</option>'; document.getElementById('fHab').value=''; document.getElementById('fEstado').value='Disponible'; render(); };
 const loading=document.getElementById('loading'), listaPub=document.getElementById('listaPub'), vacio=document.getElementById('vacio');
+
 onSnapshot(query(collection(db,"empleadas_v4"),orderBy("creado","desc")), snap=>{ cache=[]; snap.forEach(d=>cache.push({id:d.id,...d.data()})); loading.classList.add('hidden'); listaPub.classList.remove('hidden'); render(); });
-function render(){ let q=buscador.value.toLowerCase(); let fc=fComuna.value; let fb=document.getElementById('fBarrio').value; let fh=document.getElementById('fHab').value; let fe=document.getElementById('fEstado').value; let lista=cache.filter(e=> (e.nombre+' '+e.barrio+' '+(e.skills||[]).join(' ')).toLowerCase().includes(q) && (fc? String(e.comuna)===fc:true) && (fb? e.barrio===fb:true) && (fh? (e.skills||[]).includes(fh):true) && (fe? e.estado===fe:true)).slice(0,60); document.getElementById('totalPub').innerText=lista.length+' disponibles'; vacio.classList.toggle('hidden', lista.length>0); listaPub.innerHTML=lista.map(e=>{ const tel=String(e.telefono||'').replace(/\D/g,''); const foto=esc(e.foto||'https://via.placeholder.com/90'); return `<div class="bg-white rounded-[24px] p-5 border"><div class="flex gap-4"><img src="${foto}" class="w-[84px] h-[84px] rounded-full object-cover"><div class="flex-1"><b class="text-[14px]">${esc(e.nombre)}</b><div class="text-[11px] opacity-60">C${esc(e.comuna)} ${esc(e.barrio)}</div><div class="text-[12px] font-black">$${Number(e.pago||90000).toLocaleString('es-CO')} / día</div></div></div><div class="flex gap-2 mt-4"><a href="https://wa.me/57${tel}" target="_blank" class="flex-1 bg-green-600 text-white py-3 rounded-full text-center text-xs font-black">WhatsApp</a></div></div>`; }).join(''); }
+
+function render(){ let q=buscador.value.toLowerCase(); let fc=fComuna.value; let fb=document.getElementById('fBarrio').value; let fh=document.getElementById('fHab').value; let fe=document.getElementById('fEstado').value; let lista=cache.filter(e=> (e.nombre+' '+e.barrio+' '+(e.skills||[]).join(' ')).toLowerCase().includes(q) && (fc? String(e.comuna)===fc:true) && (fb? e.barrio===fb:true) && (fh? (e.skills||[]).includes(fh):true) && (fe? e.estado===fe:true)).slice(0,60); document.getElementById('totalPub').innerText=lista.length+' disponibles'; vacio.classList.toggle('hidden', lista.length>0); listaPub.innerHTML=lista.map(e=>{ const tel=String(e.telefono||'').replace(/\D/g,''); const foto=esc(e.foto||'https://via.placeholder.com/90'); return `<div onclick="abrirPerfil('${e.id}')" class="bg-white rounded-[24px] p-5 border cursor-pointer hover:shadow-xl transition"><div class="flex gap-4"><img src="${foto}" class="w-[84px] h-[84px] rounded-full object-cover"><div class="flex-1"><b class="text-[14px]">${esc(e.nombre)}</b><div class="text-[11px] opacity-60">C${esc(e.comuna)} ${esc(e.barrio)}</div><div class="text-[12px] font-black">$${Number(e.pago||90000).toLocaleString('es-CO')} / día</div><div class="mt-2 text-[10px] bg-black text-white inline-block px-2 py-1 rounded-full">👁️ Ver Información</div></div></div><div class="flex gap-2 mt-4" onclick="event.stopPropagation()"><a href="https://wa.me/57${tel}" target="_blank" class="flex-1 bg-green-600 text-white py-3 rounded-full text-center text-xs font-black">WhatsApp</a></div></div>`; }).join(''); }
+
+window.abrirPerfil = (id)=>{
+  const e = cache.find(x=>x.id===id); if(!e) return;
+  const tel=String(e.telefono||'').replace(/\D/g,'');
+  const foto=esc(e.foto||'https://via.placeholder.com/200');
+  const skills = (e.skills||[]).map(s=>`<span class="bg-black text-white text-[10px] px-3 py-1 rounded-full">${esc(s)}</span>`).join(' ');
+  document.getElementById('modalContent').innerHTML = `
+    <div class="text-center"><img src="${foto}" class="w-[130px] h-[130px] rounded-full object-cover mx-auto border-4 border-black"><h2 class="font-black text-xl mt-3">${esc(e.nombre)}</h2><p class="text-sm opacity-60">C${esc(e.comuna)} - ${esc(e.barrio)} • ${esc(e.edad||'')} años</p><p class="font-black mt-1">$${Number(e.pago||90000).toLocaleString('es-CO')} / día - ${esc(e.estado||'Disponible')}</p></div>
+    <div class="mt-5"><p class="font-bold text-sm mb-2">🔥 Habilidades:</p><div class="flex flex-wrap gap-2">${skills||'<span class="text-xs opacity-50">No registradas</span>'}</div></div>
+    <div class="mt-5"><p class="font-bold text-sm">📝 Sobre mí:</p><p class="text-sm mt-1 bg-[#f8f8f7] p-3 rounded-xl">${esc(e.descripcion||e.experiencia||'Persona responsable, honesta y con experiencia comprobada.')}</p></div>
+    <div class="mt-5 grid gap-2"><a href="https://wa.me/57${tel}?text=Hola%20${encodeURIComponent(e.nombre)}%20te%20vi%20en%20Empleadas%20Cali" target="_blank" class="bg-green-600 text-white py-3 rounded-full text-center font-black">💬 Contactar por WhatsApp</a><button onclick="cerrarPerfil()" class="border-2 py-3 rounded-full font-bold text-sm">Cerrar</button></div>
+  `;
+  document.getElementById('modalPerfil').classList.remove('hidden');
+}
+window.cerrarPerfil = ()=>{ document.getElementById('modalPerfil').classList.add('hidden'); }
+document.getElementById('modalPerfil').addEventListener('click',(e)=>{ if(e.target.id==='modalPerfil') cerrarPerfil(); });
 </script>
 </body>
 </html>
